@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafío de Banderas</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:'Courier New',monospace;
+}
+
+body{
+    background:#111;
+    min-height:100vh;
+    color:#f8f8f2;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:12px;
+    background-image:
+        radial-gradient(circle at top left, rgba(0,255,255,0.12), transparent 20%),
+        radial-gradient(circle at bottom right, rgba(255,0,255,0.12), transparent 18%),
+        linear-gradient(90deg, rgba(20,20,30,0.98), rgba(5,5,15,0.98));
+}
+
+.screen{
+    width:100%;
+    max-width:1200px;
+    text-align:center;
+    border:5px solid #39ff14;
+    border-radius:18px;
+    background:rgba(5,5,15,0.98);
+    box-shadow:0 0 0 8px rgba(57,255,20,0.08), 0 18px 45px rgba(0,0,0,0.45);
+    padding:24px;
+}
+
+.title{
+    font-size:2.4rem;
+    margin-bottom:14px;
+    letter-spacing:0.15rem;
+    text-transform:uppercase;
+    color:#00ffc8;
+    text-shadow:0 0 10px rgba(0, 255, 255, 0.95), 3px 3px 0 #000;
+}
+
+.subtitle{
+    font-size:1.25rem;
+    margin-bottom:18px;
+    color:#ffffff;
+    text-shadow:0 0 4px rgba(0,255,255,0.8);
+    line-height:1.5;
+}
+
+.play-btn{
+    background:#020b12;
+    color:#fbff00;
+    border:4px solid #fbff00;
+    border-radius:0;
+    padding:14px 32px;
+    font-size:1.1rem;
+    cursor:pointer;
+    font-weight:bold;
+    letter-spacing:0.08rem;
+    text-transform:uppercase;
+    box-shadow:0 0 0 2px rgba(0,255,234,0.3), 0 0 28px rgba(0,255,234,0.16);
+}
+
+.play-btn:hover{
+    transform:scale(1.05);
+    background:#00242d;
+}
+
+.counter{
+    font-size:1.2rem;
+    margin-bottom:12px;
+    font-weight:bold;
+    color:#fff;
+    background:linear-gradient(135deg, rgba(0,255,234,0.16), rgba(0,0,0,0.45));
+    border:2px solid rgba(0,255,234,0.55);
+    border-radius:12px;
+    padding:10px 14px;
+    display:inline-block;
+    min-width:220px;
+    margin:0 5px 12px;
+    text-shadow:0 0 2px rgba(0,0,0,0.5);
+}
+
+.game-area{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.flags, .countries{
+    background:rgba(10,10,18,0.95);
+    border-radius:18px;
+    padding:16px;
+    border:3px solid rgba(57,255,20,0.24);
+    box-shadow:0 0 40px rgba(57,255,20,0.08);
+}
+
+.flags, .countries{
+    display:grid;
+    gap:10px;
+    align-content:start;
+}
+
+.flags{
+    grid-template-columns:repeat(3,1fr);
+    grid-template-rows:repeat(4, 1fr);
+    min-height:520px;
+    max-height:520px;
+}
+
+.countries{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:10px;
+    align-content:start;
+    max-height:520px;
+    overflow:auto;
+    padding:12px;
+}
+
+
+.flag{
+    width:100%;
+    height:100%;
+    padding:0;
+    margin:0;
+    cursor:grab;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:2px solid #d814ff;
+    border-radius:10px;
+    background:#051014;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.09), 0 0 20px rgba(57,255,20,0.14);
+}
+
+.flag img{width:86%;height:86%;object-fit:contain;border-radius:8px;display:block}
+
+.country{
+    background:#7cf8d3;
+    color:#091010;
+    padding:8px 10px;
+    margin:0;
+    border:2px solid #000;
+    border-radius:8px;
+    min-height:68px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+    font-size:0.78rem;
+    line-height:1.1;
+    text-align:center;
+    box-shadow:2px 2px 0 rgba(0,0,0,0.2);
+}
+
+.drag-over{
+    background:#ffe066 !important;
+}
+
+.hidden{
+    display:none;
+}
+
+.countries{
+    grid-template-columns:repeat(2,1fr);
+}
+
+@media(max-width:800px){
+
+.game-area{
+    grid-template-columns:1fr;
+}
+
+.flag{
+    font-size:0.9rem;
+}
+
+.flags, .countries{
+    grid-template-columns:repeat(2,1fr);
+}
+
+.flags{
+    grid-template-rows:none;
+    min-height:auto;
+    max-height:auto;
+}
+
+.title{
+    font-size:2.2rem;
+}
+
+}
+
+</style>
+</head>
+<body>
+
+<!-- INICIO -->
+<div id="startScreen" class="screen">
+
+    <h1 class="title">🏆 DESAFÍO DE BANDERAS 🏆</h1>
+
+    <div style="font-size:4rem;margin:20px;">
+        ⚽ 🌎 🏆
+    </div>
+
+    <p class="subtitle">
+        ¡Empareja las banderas con sus países!
+    </p>
+
+    <p class="subtitle">
+        12 países aleatorios por partida
+    </p>
+
+    <button class="play-btn" onclick="startGame()">
+        ▶ JUGAR
+    </button>
+
+</div>
+
+<!-- JUEGO -->
+<div id="gameScreen" class="screen hidden">
+
+    <div class="counter" id="counter">
+        🌎 Países encontrados: 0 / 12
+    </div>
+    <div class="counter" id="errorCounter">
+        ❌ Errores: 0 / 6
+    </div>
+
+    <div class="game-area">
+
+        <div class="flags" id="flagsContainer"></div>
+
+        <div class="countries" id="countriesContainer"></div>
+
+    </div>
+
+</div>
+
+<!-- FINAL -->
+<div id="finalScreen" class="screen hidden">
+
+    <h1 id="finalTitle" class="title">🏆 ¡MAESTRO MUNDIALISTA! 🏆</h1>
+
+    <div id="finalStars" style="font-size:5rem;margin:20px;">
+        ⭐⭐⭐⭐⭐
+    </div>
+
+    <h2 id="finalMessage">¡Encontraste los 12 países!</h2>
+
+    <br>
+
+    <button class="play-btn" onclick="startGame()">
+        JUGAR DE NUEVO
+    </button>
+
+</div>
+
+<script>
+
+const countriesPool = [
+
+{name:"Argentina",code:"ar"},
+{name:"Brasil",code:"br"},
+{name:"Uruguay",code:"uy"},
+{name:"Paraguay",code:"py"},
+{name:"Chile",code:"cl"},
+{name:"Perú",code:"pe"},
+{name:"Colombia",code:"co"},
+{name:"Ecuador",code:"ec"},
+{name:"Venezuela",code:"ve"},
+{name:"México",code:"mx"},
+{name:"Estados Unidos",code:"us"},
+{name:"Canadá",code:"ca"},
+{name:"Francia",code:"fr"},
+{name:"España",code:"es"},
+{name:"Alemania",code:"de"},
+{name:"Inglaterra",code:"gb"},
+{name:"Portugal",code:"pt"},
+{name:"Italia",code:"it"},
+{name:"Bélgica",code:"be"},
+{name:"Países Bajos",code:"nl"},
+{name:"Croacia",code:"hr"},
+{name:"Suiza",code:"ch"},
+{name:"Polonia",code:"pl"},
+{name:"Dinamarca",code:"dk"},
+{name:"Suecia",code:"se"},
+{name:"Noruega",code:"no"},
+{name:"Japón",code:"jp"},
+{name:"Corea del Sur",code:"kr"},
+{name:"China",code:"cn"},
+{name:"Australia",code:"au"},
+{name:"Nueva Zelanda",code:"nz"},
+{name:"Marruecos",code:"ma"},
+{name:"Senegal",code:"sn"},
+{name:"Camerún",code:"cm"},
+{name:"Túnez",code:"tn"},
+{name:"Egipto",code:"eg"},
+{name:"Nigeria",code:"ng"},
+{name:"Ghana",code:"gh"},
+{name:"Turquía",code:"tr"},
+{name:"Serbia",code:"rs"},
+{name:"Austria",code:"at"},
+{name:"Ucrania",code:"ua"},
+{name:"Rumanía",code:"ro"},
+{name:"Grecia",code:"gr"},
+{name:"Irlanda",code:"ie"},
+{name:"Escocia",code:"gb"},
+{name:"Irán",code:"ir"},
+{name:"Arabia Saudita",code:"sa"}
+
+];
+
+let selectedCountries = [];
+let found = 0;
+let errors = 0;
+const maxErrors = 6;
+let matched = new Set();
+
+function shuffle(array){
+
+for(let i=array.length-1;i>0;i--){
+
+const j=Math.floor(Math.random()*(i+1));
+
+[array[i],array[j]]=[array[j],array[i]];
+
+}
+
+return array;
+
+}
+
+function startGame(){
+
+found = 0;
+errors = 0;
+matched.clear();
+
+document.getElementById("startScreen").classList.add("hidden");
+document.getElementById("finalScreen").classList.add("hidden");
+document.getElementById("gameScreen").classList.remove("hidden");
+
+    document.getElementById("counter").innerHTML =
+    "🌎 Países encontrados: 0 / 12";
+    document.getElementById("errorCounter").innerHTML =
+    "❌ Errores: 0 / 6";
+
+selectedCountries = shuffle([...countriesPool]).slice(0,12);
+
+renderBoard();
+
+}
+
+function renderBoard(){
+
+const flagsContainer =
+document.getElementById("flagsContainer");
+
+const countriesContainer =
+document.getElementById("countriesContainer");
+
+flagsContainer.innerHTML="";
+countriesContainer.innerHTML="";
+
+const shuffledFlags =
+shuffle([...selectedCountries]);
+
+const shuffledCountries =
+shuffle([...selectedCountries]);
+
+shuffledFlags.forEach(country=>{
+
+const flag=document.createElement("div");
+
+flag.className="flag";
+flag.draggable=true;
+flag.dataset.code=country.code;
+
+// crear imagen desde flagcdn (SVG)
+const img=document.createElement("img");
+img.alt=country.name + " flag";
+img.src = `https://flagcdn.com/${country.code}.svg`;
+
+flag.appendChild(img);
+
+flag.addEventListener("dragstart",e=>{
+
+    // enviamos el código ISO del país
+    e.dataTransfer.setData(
+    "text",
+    country.code
+    );
+
+    try{
+        e.dataTransfer.setDragImage(img,40,20);
+    }catch(err){}
+
+});
+
+flagsContainer.appendChild(flag);
+
+});
+
+shuffledCountries.forEach(country=>{
+
+const box=document.createElement("div");
+
+box.className="country";
+
+box.textContent=country.name;
+
+box.dataset.country=country.name;
+box.dataset.code=country.code;
+
+box.addEventListener("dragover",e=>{
+
+e.preventDefault();
+
+box.classList.add("drag-over");
+
+});
+
+box.addEventListener("dragleave",()=>{
+
+box.classList.remove("drag-over");
+
+});
+
+box.addEventListener("drop",e=>{
+
+e.preventDefault();
+
+box.classList.remove("drag-over");
+
+    const draggedCode =
+    e.dataTransfer.getData("text");
+
+    const pair =
+    draggedCode + "|" + country.code;
+
+    if(
+    draggedCode===country.code &&
+    !matched.has(pair)
+    ){
+
+    matched.add(pair);
+
+    found++;
+
+        document.getElementById("counter").innerHTML =
+`🌎 Países encontrados: ${found} / 12`;
+
+    if(found===12){
+
+    setTimeout(()=>{
+
+    document
+    .getElementById("gameScreen")
+    .classList.add("hidden");
+
+    document
+    .getElementById("finalTitle")
+    .textContent = "🏆 ¡MAESTRO DE BANDERAS! 🏆";
+    document
+    .getElementById("finalStars")
+    .textContent = "⭐⭐⭐⭐⭐";
+    document
+    .getElementById("finalMessage")
+    .textContent = "¡Encontraste los 12 países!";
+
+    document
+    .getElementById("finalScreen")
+    .classList.remove("hidden");
+
+    },500);
+
+    }
+
+    } else {
+        errors++;
+        document.getElementById("errorCounter").innerHTML =
+        `❌ Errores: ${errors} / ${maxErrors}`;
+
+        if(errors>=maxErrors){
+            setTimeout(()=>{
+                document
+                .getElementById("gameScreen")
+                .classList.add("hidden");
+                document
+                .getElementById("finalTitle")
+                .textContent = "game over";
+                document
+                .getElementById("finalStars")
+                .textContent = "💀";
+                document
+                .getElementById("finalMessage")
+                .textContent = "Has alcanzado el máximo de errores.";
+                document
+                .getElementById("finalScreen")
+                .classList.remove("hidden");
+            }, 200);
+        }
+    }
+
+});
+
+countriesContainer.appendChild(box);
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
