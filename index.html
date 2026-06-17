@@ -302,6 +302,9 @@ body::before{
     <div class="counter" id="errorCounter">
         ❌ Errores: 0 / 6
     </div>
+    <div class="counter" id="wrongCounter">
+        🚩 Lugar incorrecto: 0
+    </div>
 
     <div class="game-area">
 
@@ -395,11 +398,13 @@ let draggedSourceBox = null;
 
 function updateCounters(){
     found = matched.size;
-    errors = misplacedFlags.size;
+    const wrongPlaced = misplacedFlags.size;
     document.getElementById("counter").innerHTML =
         `🌎 Países encontrados: ${found} / 12`;
     document.getElementById("errorCounter").innerHTML =
         `❌ Errores: ${errors} / ${maxErrors}`;
+    document.getElementById("wrongCounter").innerHTML =
+        `🚩 Lugar incorrecto: ${wrongPlaced}`;
 }
 
 function clearPlacement(code, boxCode){
@@ -408,6 +413,17 @@ function clearPlacement(code, boxCode){
         matched.delete(pair);
     }
     if(misplacedFlags.get(code) === boxCode){
+        misplacedFlags.delete(code);
+    }
+}
+
+function clearPreviousPlacement(code){
+    for (const pair of [...matched]) {
+        if (pair.startsWith(code + "|")) {
+            matched.delete(pair);
+        }
+    }
+    if (misplacedFlags.has(code)) {
         misplacedFlags.delete(code);
     }
 }
@@ -428,22 +444,25 @@ return array;
 
 function startGame(){
 
-found = 0;
-errors = 0;
-matched.clear();
+    found = 0;
+    errors = 0;
+    matched.clear();
+    misplacedFlags.clear();
 
-document.getElementById("startScreen").classList.add("hidden");
-document.getElementById("finalScreen").classList.add("hidden");
-document.getElementById("gameScreen").classList.remove("hidden");
+    document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("finalScreen").classList.add("hidden");
+    document.getElementById("gameScreen").classList.remove("hidden");
 
     document.getElementById("counter").innerHTML =
-    "🌎 Países encontrados: 0 / 12";
+        "🌎 Países encontrados: 0 / 12";
     document.getElementById("errorCounter").innerHTML =
-    "❌ Errores: 0 / 6";
+        "❌ Errores: 0 / 6";
+    document.getElementById("wrongCounter").innerHTML =
+        "🚩 Lugar incorrecto: 0";
 
-selectedCountries = shuffle([...countriesPool]).slice(0,12);
+    selectedCountries = shuffle([...countriesPool]).slice(0,12);
 
-renderBoard();
+    renderBoard();
 
 }
 
@@ -552,6 +571,9 @@ box.addEventListener("drop",e=>{
         existingFlag.remove();
     }
 
+    // Remover el estado anterior de la bandera arrastrada
+    clearPreviousPlacement(draggedCode);
+
     // Mover la bandera original desde su origen al cuadro destino
     if(draggedElement){
         if(draggedElement.parentElement && draggedElement.parentElement !== box){
@@ -564,6 +586,7 @@ box.addEventListener("drop",e=>{
         matched.add(pair);
     } else {
         misplacedFlags.set(draggedCode, country.code);
+        errors++;
     }
 
     updateCounters();
